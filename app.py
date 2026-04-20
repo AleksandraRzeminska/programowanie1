@@ -1,4 +1,4 @@
-from flask import Flask, render_template, g
+from flask import Flask, render_template, g, request, redirect, url_for
 import sqlite3
 
 
@@ -67,6 +67,28 @@ def ping_db():
     db.execute("SELECT 1").fetchone()
     return render_template("ping.html")
 
+@app.route("/list")
+def list():
+    db = get_db()
+    tasks = db.execute("SELECT id, title, done, created_at FROM tasks ORDER BY created_at DESC").fetchall()
+    return render_template('list.html', tasks = tasks)
+
+@app.route("/add_task", methods=["GET", "POST"])
+def add_task():
+    if request.method == "POST":
+        title = request.form.get("title").strip()
+        if len(title) < 4:
+            error = f"Tytuł musi być dłuższy"
+            return render_template('add_task.html', error = error )
+        db = get_db()
+        existingTask = db.execute("SELECT id FROM tasks WHERE title LIKE ? ", [title]).fetchone()
+        if existingTask:
+            error = f"Istnieje juz zadanie o tytule: {title}"
+            return render_template('add_task.html', error = error )
+        db.execute("INSERT INTO tasks(title, done) VALUES (?, ?)", (title, 0))
+        db.commit()
+        return redirect(url_for('list'))
+    return render_template('add_task.html')
 
 
 if __name__ == "__main__":

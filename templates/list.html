@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+{% block title %}Lista tasków{% endblock %}
+{% block content %}
+<h1>Lista tasków</h1>
+<a href="{{url_for('add_task')}}">Dodaj zadanie</a>
+{% if tasks|length == 0 %}
+<p>Brak zadan na liscie</p> 
+{% else %}
+<ul>
+    {% for task in tasks %}
+    <li>
+        {% if task["done"] == 1 %}
+            ✔ {{ task["title"] }}
+        {% else %}
+            ✖ {{ task["title"] }}
+        {% endif %}
+        <small>({{task["created_at"]}})</small>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
