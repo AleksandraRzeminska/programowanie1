@@ -1,8 +1,10 @@
-from flask import Flask, render_template, g, request, redirect, url_for
+from flask import Flask, render_template, g, request, redirect, url_for, flash
+import secrets
 import sqlite3
 
 
 app = Flask(__name__) 
+app.config["SECRET_KEY"] = secrets.token_urlsafe(16)
 DATABASE = "todo.db"
 SCHEMA_SQL = """CREATE TABLE IF NOT EXISTS tasks(
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,8 +89,25 @@ def add_task():
             return render_template('add_task.html', error = error )
         db.execute("INSERT INTO tasks(title, done) VALUES (?, ?)", (title, 0))
         db.commit()
+        flash("Dodano zadanie")
         return redirect(url_for('list'))
     return render_template('add_task.html')
+
+@app.route("/tasks/<int:task_id>/toggle", methods=["POST"])
+def toggle_task(task_id):
+    db = get_db()
+    db.execute("UPDATE tasks SET done = NOT done WHERE id = ?", [task_id])
+    db.commit()
+    return redirect(url_for('list'))
+
+@app.route("/tasks/<int:task_id>", methods=["POST"])
+def delete_task(task_id):
+    db = get_db()
+    db.execute("DELETE FROM tasks WHERE id = ?", [task_id])
+    db.commit()
+    flash("Usunięto zadanie")
+    return redirect(url_for('list'))
+
 
 
 if __name__ == "__main__":
