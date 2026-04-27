@@ -16,6 +16,8 @@
                 <li class="{{ category}}">{{ message }}</li>
                 {% endfor %}
             </ul>
+        {% endif %}
+        {% endwith %}
         {% block content %}
         <p>Witaj w aplikacji ToDo List</p>
         {% endblock %}
